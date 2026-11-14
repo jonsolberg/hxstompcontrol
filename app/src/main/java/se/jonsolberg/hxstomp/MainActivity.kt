@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
                 MainScreen(vm, onConnect = ::tryConnect)
             }
         }
-        tryConnect()
+        if (intent.getBooleanExtra(EXTRA_DEMO, false)) vm.startDemo() else tryConnect()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -89,5 +89,6 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         const val ACTION_USB_PERMISSION = "se.jonsolberg.hxstomp.USB_PERMISSION"
+        const val EXTRA_DEMO = "demo"
     }
 }

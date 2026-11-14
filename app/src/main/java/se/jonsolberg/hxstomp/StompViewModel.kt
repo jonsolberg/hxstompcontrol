@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import se.jonsolberg.hxstomp.usb.BulkTransport
+import se.jonsolberg.hxstomp.usb.DemoDevice
 import se.jonsolberg.hxstomp.usb.HxModel
 import se.jonsolberg.hxstomp.usb.HxSession
 import se.jonsolberg.hxstomp.usb.HxUsbConnection
@@ -43,6 +45,11 @@ class StompViewModel(app: Application) : AndroidViewModel(app) {
 
     private val lock = Mutex()
     private var connection: HxUsbConnection? = null
+    private var demo: DemoDevice? = null
+
+    /** The open transport and its model: the USB device, or the demo pedal. */
+    private fun target(): Pair<BulkTransport, HxModel>? =
+        connection?.let { it to it.model } ?: demo?.let { it to HxModel.HX_STOMP }
     private val time = SimpleDateFormat("HH:mm:ss.SSS", Locale.ROOT)
 
     private fun log(line: String) {
@@ -89,12 +96,13 @@ class StompViewModel(app: Application) : AndroidViewModel(app) {
     fun refresh() {
         viewModelScope.launch(Dispatchers.IO) {
             lock.withLock {
-                val c = connection ?: return@withLock
+                val (io, model) = target() ?: return@withLock
                 _state.update { it.copy(busy = true, error = null, status = "Reading presets…") }
                 try {
-                    val presets = HxSession(c, ::log).listPresets(c.model)
+                    val presets = HxSession(io, ::log).listPresets(model)
+                    val demoNote = if (demo != null) " (demo)" else ""
                     _state.update {
-                        it.copy(busy = false, presets = presets, status = "${c.model.name} · ${presets.size} presets")
+                        it.copy(busy = false, presets = presets, status = "${model.name}$demoNote · ${presets.size} presets")
                     }
                 } catch (e: Exception) {
                     log("!! ${e.javaClass.simpleName}: ${e.message}")
@@ -107,10 +115,10 @@ class StompViewModel(app: Application) : AndroidViewModel(app) {
     fun select(slot: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             lock.withLock {
-                val c = connection ?: return@withLock
+                val (io, _) = target() ?: return@withLock
                 _state.update { it.copy(busy = true, error = null) }
                 try {
-                    HxSession(c, ::log).selectPreset(slot)
+                    HxSession(io, ::log).selectPreset(slot)
                     _state.update { it.copy(busy = false, selected = slot) }
                 } catch (e: Exception) {
                     log("!! ${e.javaClass.simpleName}: ${e.message}")
@@ -133,6 +141,15 @@ class StompViewModel(app: Application) : AndroidViewModel(app) {
                 }
             }
         }
+    }
+
+    /** Shows a pretend HX Stomp, for screenshots and trying the app without a pedal. */
+    fun startDemo() {
+        if (connection != null || demo != null) return
+        demo = DemoDevice()
+        _state.update { it.copy(model = HxModel.HX_STOMP, connected = true, status = "HX Stomp (demo)") }
+        log("-- demo mode: simulated HX Stomp")
+        refresh()
     }
 
     fun clearLog() = _state.update { it.copy(log = emptyList()) }
