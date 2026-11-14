@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Line 6 vendor ID 0x0E41: HX Stomp 0x4246, HX Stomp XL 0x4253, Helix Floor 0x4248 -->
+<resources>
+    <usb-device vendor-id="3649" product-id="16966" />
+    <usb-device vendor-id="3649" product-id="16979" />
+    <usb-device vendor-id="3649" product-id="16968" />
+</resources>
