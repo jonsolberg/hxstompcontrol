@@ -6,12 +6,22 @@ a first step towards an HX Edit for Android. Written in Kotlin with Jetpack Comp
 > Independent hobby project, not affiliated with, endorsed by or sponsored by Line 6
 > or Yamaha Guitar Group. Line 6, HX Stomp and Helix are trademarks of their owners.
 
+<p>
+  <img src="docs/screenshot-presets.png" width="200" alt="Preset list">
+  <img src="docs/screenshot-selected.png" width="200" alt="Selected preset">
+  <img src="docs/screenshot-search.png" width="200" alt="Search">
+  <img src="docs/screenshot-usb-log.png" width="200" alt="USB log">
+</p>
+
+*Screenshots from the built-in demo mode (a simulated HX Stomp with made-up preset names).*
+
 ## Status – version 0.1 (experimental)
 
 - Reads the preset list from the pedal and shows it bank by bank (00A–41C)
 - Tap a preset to make it active on the pedal
 - Search presets by name or number
 - USB log (ⓘ) with every packet sent and received – share it when something fails
+- Demo mode without a pedal: `adb shell am start -n se.jonsolberg.hxstomp/.MainActivity --ez demo true`
 
 Works with the **HX Stomp**. The **HX Stomp XL** and **Helix Floor** are recognised too
 (same protocol), but untested.
