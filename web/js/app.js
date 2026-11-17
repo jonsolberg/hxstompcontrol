@@ -202,8 +202,14 @@
     m.appendChild((pages[S.page] || pageDirect)());
     m.scrollTop = 0;
   }
+  var HTTPS = 'https://jonsolberg.github.io/hxstompforandroid/';
   function notConnectedNote() {
     if (S.midi.connected) return null;
+    if (!PF.isAndroid && !PF.isDemo && !window.isSecureContext) {
+      return h('div', { class: 'warn' }, h('b', null, 'Direct mode needs the secure (https) version. '),
+        'Browsers only allow USB MIDI on https pages. The Editor works here too. ',
+        h('a', { href: HTTPS + location.hash }, 'Open the https version'), ' · ', h('a', { href: '?demo#direct' }, 'or try the demo'));
+    }
     return h('div', { class: 'warn' },
       h('b', null, 'Not connected. '),
       S.midi.available()
