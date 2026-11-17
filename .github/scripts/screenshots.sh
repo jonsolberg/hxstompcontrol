@@ -31,24 +31,21 @@ PY
 
 # 1. Started without a pedal
 adb shell am start -n $PKG/.MainActivity
-sleep 6
+sleep 8
 adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS
 shot 01-not-connected
 
 # 2. Demo mode: a simulated HX Stomp
 adb shell am force-stop $PKG
 adb shell am start -n $PKG/.MainActivity --ez demo true
-sleep 6
-shot 02-presets
-tap_text "Lead Boost"
-shot 03-selected
-tap_text "Search presets"
-adb shell input text "live"
-sleep 1
-adb shell input keyevent 111   # ESC hides the keyboard
-shot 04-search
-tap_text "USB log"
-shot 05-usb-log
+sleep 8
+shot 02-direct
+tap_text "Presets"
+shot 03-presets
+tap_text "Editor"
+shot 04-editor
+tap_text "System"
+shot 05-system
 
 adb logcat -d > shots/logcat.txt
 adb logcat -d | grep -E "AndroidRuntime|FATAL" > shots/crashes.txt || true

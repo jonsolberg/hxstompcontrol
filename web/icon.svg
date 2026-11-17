@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Original artwork: a generic three-switch stompbox. -->
+  <rect x="4" y="8" width="56" height="48" rx="9" fill="#1b1d21"/>
+  <rect x="12" y="14" width="22" height="14" rx="3" fill="#050506" stroke="#4a4d54" stroke-width="1.5"/>
+  <rect x="15" y="18" width="16" height="3" rx="1.5" fill="#9a7bff"/>
+  <circle cx="44" cy="21" r="5" fill="#3a3d43"/>
+  <circle cx="16" cy="44" r="6" fill="none" stroke="#9a7bff" stroke-width="3"/>
+  <circle cx="32" cy="44" r="6" fill="none" stroke="#3ccf6b" stroke-width="3"/>
+  <circle cx="48" cy="44" r="6" fill="none" stroke="#ff4a3d" stroke-width="3"/>
+</svg>
