@@ -246,7 +246,6 @@
       [[105, 'RETURN R'], [215, 'RETURN L/MONO'], [330, 'SEND']].map(function (j) {
         return [at(931, j[0], h('span', { class: 'jack side right' })), at(950, j[0], h('span', { class: 'jlabel vert' }, j[1]))];
       }),
-      at(56, 22, h('span', { class: 'screw' })), at(864, 22, h('span', { class: 'screw' })),
       // the screen
       at(275, 175, h('div', { class: 'bezel' }, lcd)),
       // VIEW / ACTION with the upper knob, PAGE with the lower knob
