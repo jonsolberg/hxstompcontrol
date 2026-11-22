@@ -226,8 +226,8 @@ table.grid th { font-size: 12px; color: var(--muted); font-weight: 600; }
 .bezel .lcd.tuner .pn::after { content: ''; }
 .bezel .lcd .snapname { text-align: center; font: 600 14px/1 "Helvetica Neue", Arial, sans-serif; color: #c9ccd2; margin: -2px 0 6px; letter-spacing: .5px; }
 .bezel .lcd .fsl b.on { background: currentColor; box-shadow: 0 0 8px currentColor; }
-/* Tuner and DSP bypass: the pedal's navy screens */
-.bezel .lcd.tuner, .bezel .lcd.bypass { background: linear-gradient(160deg, #343a6b 0%, #262b52 55%, #2c3157 100%); padding: 8px 12px 10px; }
+/* Tuner and DSP bypass screens */
+.bezel .lcd.tuner, .bezel .lcd.bypass { padding: 8px 12px 10px; }  /* same black as the preset screen */
 .bezel .lcd .tn-note { display: flex; justify-content: center; align-items: center; gap: 46px; height: 58px; font: 300 46px/1 "Helvetica Neue", Arial, sans-serif; color: #e9ebf5; }
 .bezel .lcd .tn-note b { font-weight: 300; font-size: 58px; min-width: 0; }
 .bezel .lcd .tn-strobe { height: 54px; margin: 4px 2px 0; background: repeating-linear-gradient(90deg, #a9b5b8 0 2px, #9aa6a9 2px 4px); }
