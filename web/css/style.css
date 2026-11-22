@@ -112,7 +112,7 @@ table.grid th { font-size: 12px; color: var(--muted); font-weight: 600; }
 .fs .lab { font: 600 12px/1.2 system-ui; color: #c8ccd2; text-align: center; min-height: 15px; }
 .extfs { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
 .pedal-side { display: flex; flex-direction: column; gap: 10px; min-width: 110px; }
-.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; max-width: 920px; margin: 0 auto; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; max-width: var(--pedalw, 920px); margin: 0 auto; }
 .tiles .card { margin: 0; }
 .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
 .seg button { border: 0; border-radius: 0; border-right: 1px solid var(--line); }
@@ -261,6 +261,7 @@ table.grid th { font-size: 12px; color: var(--muted); font-weight: 600; }
 .hxpanel .fs .cap { position: relative; width: 52px; height: 52px; border-radius: 50%;
   background: radial-gradient(circle at 38% 30%, #ffffff, #c4c7cc 45%, #7d8086 100%); box-shadow: 0 5px 8px rgba(0,0,0,.65), inset 0 -3px 4px rgba(0,0,0,.25); }
 .hxpanel .fs .ring.down .cap { transform: scale(.93); }
+.ctlbar { max-width: var(--pedalw, 920px); margin: 0 auto 14px; }
 .ctlbar .row { gap: 6px; } .ctlbar .sep { width: 1px; height: 26px; background: var(--line); margin: 0 4px; }
 @media (max-width: 760px) { .ctlbar .sep { display: none; } }
 

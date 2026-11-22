@@ -364,6 +364,8 @@
     panel.style.transform = 'scale(' + s + ')';
     panel.style.top = Math.round(TOP * s) + 'px';
     panel.style.left = Math.max(0, Math.round(((wrap.clientWidth || W) - W * s) / 2)) + 'px';
+    // the boxes below the pedal line up with its edges
+    document.documentElement.style.setProperty('--pedalw', Math.round(W * s) + 'px');
     wrap.style.height = Math.ceil((H + TOP) * s) + 'px';
   }
   window.addEventListener('resize', function () { var w = document.querySelector('.hxwrap'), p = document.querySelector('.hxpanel'); if (w && p) fitPanel(w, p); });
