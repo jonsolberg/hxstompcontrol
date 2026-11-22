@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '0.2.2';
+  var VERSION = '0.2.3';
   var PF = window.HXPlatform, HLX = window.HLX, CC = window.HXMidiMap.CC;
 
   // ------------------------------------------------------------------ settings (kept in the browser)
@@ -224,35 +224,58 @@
     var page = h('div', { class: 'page' }, notConnectedNote());
     var fs = CFG.fs;
 
+    // The pedal as a panel of fixed size (920 × 660), scaled to fit. Our own drawing of the layout:
+    // screen, VIEW/ACTION and PAGE buttons with their knobs, VOLUME, three parameter knobs, footswitches and jacks.
+    function at(x, y, el) { el.style.left = x + 'px'; el.style.top = y + 'px'; return el; }
+    var conn = S.midi.connected;
     var lcd = h('div', { class: 'lcd' + (S.tuner ? ' tuner' : ''), id: 'lcd' });
-    var top = h('div', { class: 'top' },
-      lcd,
-      h('div', { class: 'panelbtns' },
-        hw('View', 'Play/Edit view (CC 73)', function () { cc(CC.VIEW, 127); }),
-        hw('Mode', 'Next footswitch mode (CC 71 = 4)', function () { cc(CC.MODE, 4); }),
-        hw('◀ Page', 'Page left (CC 81)', function () { cc(CC.PAGE, 0); }),
-        hw('Page ▶', 'Page right (CC 81)', function () { cc(CC.PAGE, 127); }),
-        hw('◀ Preset', 'Previous preset (CC 72)', function () { stepPreset(-1); }),
-        hw('Preset ▶', 'Next preset (CC 72)', function () { stepPreset(1); }),
-        hw('◀ Snap', 'Previous snapshot (CC 69 = 9)', function () { selectSnapshot(9); }),
-        hw('Snap ▶', 'Next snapshot (CC 69 = 8)', function () { selectSnapshot(8); })),
-      h('div', { class: 'pedal-side' },
-        hw('Tap', 'Tap tempo (CC 64)', tap, 'tapBtn'),
-        hw('Tuner', 'Tuner on/off (CC 68)', function () { S.tuner = !S.tuner; cc(CC.TUNER, 127); refreshDirect(); }, 'tunerBtn'),
-        hw('Bypass', 'All bypass (CC 70)', function () { S.bypassed = !S.bypassed; cc(CC.ALL_BYPASS, S.bypassed ? 0 : 127); refreshDirect(); }, 'bypassBtn')));
+    var panel = h('div', { class: 'hxpanel' + (conn ? '' : ' off') },
+      // jacks along the top edge
+      [[150, 'EXP 1/2'], [255, 'RETURN'], [360, 'SEND'], [480, 'INPUT'], [600, 'OUTPUT'], [720, 'PHONES'], [830, 'USB']].map(function (j, i) {
+        return [at(j[0], -13, h('span', { class: i === 6 ? 'jack usb' : i === 5 ? 'jack mini' : 'jack' })), at(j[0], -34, h('span', { class: 'jlabel' }, j[1]))];
+      }),
+      at(56, 22, h('span', { class: 'screw' })), at(864, 22, h('span', { class: 'screw' })),
+      // the screen
+      at(275, 175, h('div', { class: 'bezel' }, lcd)),
+      // VIEW / ACTION with the upper knob, PAGE with the lower knob
+      at(610, 105, h('div', { class: 'pill' },
+        hwkey('view', 'VIEW', 'Play/Edit view (CC 73)', function () { cc(CC.VIEW, 127); }),
+        hwkey('action', 'ACTION', 'ACTION has no MIDI control', null))),
+      at(610, 105, bigKnob('Turn: previous/next preset (CC 72)', function (d) { stepPreset(d); })),
+      at(610, 160, h('span', { class: 'plabel bracket' }, 'SAVE')),
+      at(610, 232, h('div', { class: 'pill' },
+        hwkey('pl', '◀ PAGE', 'Page left (CC 81)', function () { cc(CC.PAGE, 0); }),
+        hwkey('pr', 'PAGE ▶', 'Page right (CC 81)', function () { cc(CC.PAGE, 127); }))),
+      at(610, 232, bigKnob('Turn: page left/right (CC 81)', function (d) { cc(CC.PAGE, d > 0 ? 127 : 0); })),
+      at(610, 287, h('span', { class: 'plabel bracket' }, '☰')),
+      at(810, 85, h('span', { class: 'plabel' }, 'VOLUME')),
+      at(810, 145, h('div', { class: 'knob vol', title: 'The volume knob has no MIDI control' }, h('div', { class: 'k' }))),
+      // the three parameter knobs
+      [0, 1, 2].map(function (i) { return at(165 + i * 110, 372, knob('Knob ' + (i + 1), i)); }),
+      at(720, 372, h('div', { class: 'panelinfo', id: 'panelinfo' })),
+      // the footswitch section
+      at(460, 440, h('span', { class: 'seamshade' })),
+      [0, 1, 2].map(function (i) { return at([140, 460, 780][i], 545, footswitch(i, fs[i])); }));
+    var wrap = h('div', { class: 'hxwrap' }, panel);
+    add(page, wrap);
+    setTimeout(function () { fitPanel(wrap, panel); }, 0);
 
-    var knobs = h('div', { class: 'knobs' },
-      [0, 1, 2].map(function (i) { return knob('Knob ' + (i + 1), i); }));
-
-    var fsrow = h('div', { class: 'fsrow' }, [0, 1, 2].map(function (i) {
-      return h('div', { class: 'fs' }, footswitch(i, fs[i]), h('div', { class: 'lab' }, fs[i].label));
-    }));
-    var ext = h('div', { class: 'extfs' }, [3, 4].map(function (i) {
-      var b = hw(fs[i].label + ' (ext)', 'External footswitch ' + (i + 1) + ' (CC ' + (CC.FS1 + i) + ')', null);
+    // the rest of the pedal's functions, as plain buttons
+    var ext = [3, 4].map(function (i) {
+      var b = h('button', { disabled: !conn, title: 'External footswitch ' + (i + 1) + ' (CC ' + (CC.FS1 + i) + ')' }, fs[i].label);
       momentary(b, CC.FS1 + i); return b;
-    }));
-
-    add(page, h('div', { class: 'pedal' }, top, knobs, fsrow, ext));
+    });
+    add(page, h('div', { class: 'card ctlbar' }, h('div', { class: 'row' },
+      h('button', { id: 'tapBtn', disabled: !conn, onclick: tap, title: 'Tap tempo (CC 64)' }, 'Tap'),
+      h('button', { id: 'tunerBtn', disabled: !conn, title: 'Tuner on/off (CC 68)', onclick: function () { S.tuner = !S.tuner; cc(CC.TUNER, 127); refreshDirect(); } }, 'Tuner'),
+      h('button', { id: 'bypassBtn', disabled: !conn, title: 'All bypass (CC 70)', onclick: function () { S.bypassed = !S.bypassed; cc(CC.ALL_BYPASS, S.bypassed ? 0 : 127); refreshDirect(); } }, 'All bypass'),
+      h('button', { disabled: !conn, title: 'Next footswitch mode (CC 71 = 4)', onclick: function () { cc(CC.MODE, 4); } }, 'Mode'),
+      h('span', { class: 'sep' }),
+      h('button', { disabled: !conn, title: 'Previous preset (CC 72)', onclick: function () { stepPreset(-1); } }, '◀ Preset'),
+      h('button', { disabled: !conn, title: 'Next preset (CC 72)', onclick: function () { stepPreset(1); } }, 'Preset ▶'),
+      h('button', { disabled: !conn, title: 'Previous snapshot (CC 69 = 9)', onclick: function () { selectSnapshot(9); } }, '◀ Snapshot'),
+      h('button', { disabled: !conn, title: 'Next snapshot (CC 69 = 8)', onclick: function () { selectSnapshot(8); } }, 'Snapshot ▶'),
+      h('span', { class: 'sep' }), ext)));
 
     // --- tiles
     var snapBtns = h('div', { class: 'seg' });
@@ -305,6 +328,33 @@
     return page;
   }
   function kb(k) { return h('span', { class: 'kbd' }, k); }
+  function hwkey(cls, text, title, fn) {
+    return h('button', { class: 'hwkey ' + cls, title: title, disabled: !S.midi.connected || !fn, onclick: fn || undefined }, text);
+  }
+  /** A knob that turns in steps (the pedal's two endless knobs). */
+  function bigKnob(title, onStep) {
+    var cap = h('div', { class: 'k' }), k = h('div', { class: 'knob big', title: title }, cap);
+    var rot = 0, acc = 0, lastY = null;
+    function step(d) { if (!S.midi.connected) return; rot += d * 24; cap.style.setProperty('--rot', rot + 'deg'); onStep(d); }
+    k.addEventListener('pointerdown', function (e) { k.setPointerCapture(e.pointerId); lastY = e.clientY; acc = 0; e.preventDefault(); });
+    k.addEventListener('pointermove', function (e) {
+      if (lastY === null) return;
+      acc += lastY - e.clientY; lastY = e.clientY;
+      while (acc > 22) { acc -= 22; step(1); } while (acc < -22) { acc += 22; step(-1); }
+    });
+    k.addEventListener('pointerup', function () { lastY = null; });
+    k.addEventListener('wheel', function (e) { e.preventDefault(); step(e.deltaY < 0 ? 1 : -1); }, { passive: false });
+    return k;
+  }
+  function fitPanel(wrap, panel) {
+    var W = 920, H = 660, TOP = 46;
+    var s = Math.min(1, (wrap.clientWidth || W) / W);
+    panel.style.transform = 'scale(' + s + ')';
+    panel.style.top = Math.round(TOP * s) + 'px';
+    panel.style.left = Math.max(0, Math.round(((wrap.clientWidth || W) - W * s) / 2)) + 'px';
+    wrap.style.height = Math.ceil((H + TOP) * s) + 'px';
+  }
+  window.addEventListener('resize', function () { var w = document.querySelector('.hxwrap'), p = document.querySelector('.hxpanel'); if (w && p) fitPanel(w, p); });
   function hw(text, title, fn, id) {
     return h('button', { class: 'hwbtn', title: title, id: id, disabled: !S.midi.connected, onclick: fn || undefined }, text);
   }
@@ -324,13 +374,15 @@
     el._press = press; el._release = release;
   }
   function footswitch(i, f) {
-    var ring = h('div', { class: 'ring', id: 'fs' + i, style: '--c:' + f.color, title: 'Footswitch ' + (i + 1) + ' (CC ' + (CC.FS1 + i) + ')' }, h('div', { class: 'cap' }));
+    var ring = h('div', { class: 'ring', id: 'fs' + i, style: '--c:' + f.color, title: f.label + ' — footswitch ' + (i + 1) + ' (CC ' + (CC.FS1 + i) + ')' },
+      h('div', { class: 'nut' }), h('div', { class: 'cap' }));
     momentary(ring, CC.FS1 + i);
-    return ring;
+    return h('div', { class: 'fs' }, ring);
   }
   function knob(name, i) {
     var k = h('div', { class: 'k' }), v = h('div', { class: 'v' }, String(S.knobs[i]));
-    var el = h('div', { class: 'knob', title: name + ' (CC ' + (CC.KNOB1 + i) + ') — drag up/down, double-click for the middle' }, k, h('span', null, name), v);
+    var kn = h('div', { class: 'knob', title: name + ' (CC ' + (CC.KNOB1 + i) + ') — drag up/down, double-click for the middle' }, k);
+    var el = h('div', { class: 'knobwrap' }, kn, h('span', { class: 'kl' }, name), v);
     function show() { k.style.setProperty('--rot', ((S.knobs[i] / 127) * 270 - 135) + 'deg'); v.textContent = S.knobs[i]; }
     var last = 0;
     function set(val) {
@@ -342,11 +394,11 @@
       else { clearTimeout(el._t); el._t = setTimeout(function () { if (S.midi.connected) cc(CC.KNOB1 + i, S.knobs[i]); }, 20); }
     }
     var startY = 0, startV = 0, drag = false;
-    el.addEventListener('pointerdown', function (e) { drag = true; startY = e.clientY; startV = S.knobs[i]; el.setPointerCapture(e.pointerId); });
-    el.addEventListener('pointermove', function (e) { if (drag) set(startV + (startY - e.clientY) * 0.6); });
-    el.addEventListener('pointerup', function () { drag = false; });
-    el.addEventListener('wheel', function (e) { e.preventDefault(); set(S.knobs[i] + (e.deltaY < 0 ? 2 : -2)); }, { passive: false });
-    el.addEventListener('dblclick', function () { set(64); });
+    kn.addEventListener('pointerdown', function (e) { drag = true; startY = e.clientY; startV = S.knobs[i]; kn.setPointerCapture(e.pointerId); });
+    kn.addEventListener('pointermove', function (e) { if (drag) set(startV + (startY - e.clientY) * 0.6); });
+    kn.addEventListener('pointerup', function () { drag = false; });
+    kn.addEventListener('wheel', function (e) { e.preventDefault(); set(S.knobs[i] + (e.deltaY < 0 ? 2 : -2)); }, { passive: false });
+    kn.addEventListener('dblclick', function () { set(64); });
     show();
     return el;
   }
@@ -356,15 +408,23 @@
     lcd.className = 'lcd' + (S.tuner ? ' tuner' : '');
     lcd.innerHTML = '';
     var fs = CFG.fs;
-    add(lcd, [
-      h('div', { class: 'meta' }, h('span', null, S.snapshot != null ? 'Snapshot ' + (S.snapshot + 1) : 'Snapshot —'),
-        h('span', null, S.tuner ? 'TUNER' : S.bypassed ? 'BYPASSED' : (S.midi.connected ? 'MIDI ch ' + CFG.ch : 'not connected'))),
-      h('div', { class: 'pn' }, label(S.preset)),
-      h('div', { class: 'pname' }, S.preset == null ? (S.midi.connected ? 'Pick a preset' : '') : (nameOf(S.preset) || 'Preset ' + label(S.preset))),
-      h('div', { class: 'fsl' }, [0, 1, 2].map(function (i) { return h('span', { style: 'color:' + fs[i].color }, fs[i].label); }))
-    ]);
-    var t = $('tunerBtn'); if (t) t.classList.toggle('lit', S.tuner);
-    var b = $('bypassBtn'); if (b) b.classList.toggle('warnlit', S.bypassed);
+    if (S.tuner) {
+      add(lcd, [h('div', { class: 'pn' }, 'TUNER'), h('div', { class: 'pname muted' }, 'Tuning on the pedal'), h('div', { class: 'tunebar' })]);
+    } else {
+      add(lcd, [
+        h('div', { class: 'snapicon', title: 'Snapshot' }, S.snapshot != null ? String(S.snapshot + 1) : '–'),
+        h('div', { class: 'pn' }, label(S.preset)),
+        h('div', { class: 'pname' }, S.preset == null ? (S.midi.connected ? 'Pick a preset' : '') : (nameOf(S.preset) || 'Preset ' + label(S.preset))),
+        h('div', { class: 'chainline' }, h('i'), h('i'), h('i'), h('i'), h('i')),
+        h('div', { class: 'fsl' }, [0, 1, 2].map(function (i) {
+          return h('div', { style: 'color:' + fs[i].color }, h('span', null, fs[i].label), h('b', { style: 'border-color:' + fs[i].color }));
+        }))
+      ]);
+    }
+    var info = $('panelinfo');
+    if (info) info.textContent = S.bypassed ? 'ALL BYPASS' : S.midi.connected ? 'MIDI ch ' + CFG.ch + (S.snapshot != null ? ' · snapshot ' + (S.snapshot + 1) : '') : 'not connected';
+    var t = $('tunerBtn'); if (t) t.classList.toggle('on', S.tuner);
+    var b = $('bypassBtn'); if (b) b.classList.toggle('on', S.bypassed);
     var tt = $('tempoTxt'); if (tt) tt.textContent = S.tempo.toFixed(1);
   }
   function tap() {
