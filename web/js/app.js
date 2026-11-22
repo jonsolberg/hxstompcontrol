@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '0.2.3';
+  var VERSION = '0.2.4';
   var PF = window.HXPlatform, HLX = window.HLX, CC = window.HXMidiMap.CC;
 
   // ------------------------------------------------------------------ settings (kept in the browser)

@@ -343,4 +343,4 @@ class MainActivity : ComponentActivity() {
 }
 
 /** The app version, shown in the web UI (kept here so no BuildConfig generation is needed). */
-object BuildConfigVersion { const val NAME = "0.2.3" }
+object BuildConfigVersion { const val NAME = "0.2.4" }
