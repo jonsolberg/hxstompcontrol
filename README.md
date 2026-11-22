@@ -12,6 +12,8 @@ guide. Use it in the browser or as a standalone Android app.
 **[Download the Android APK](https://github.com/jonsolberg/hxstompforandroid/releases/latest/download/HXStompControl.apk)** ·
 [all releases](https://github.com/jonsolberg/hxstompforandroid/releases)
 
+To install the APK, allow your browser or file manager to *install unknown apps* when Android asks.
+
 <p align="center">
   <img src="docs/web-direct.webp" width="760" alt="Direct mode: the pedal on screen">
 </p>
@@ -111,6 +113,11 @@ selects a preset, and these control changes do the rest. Footswitches are sent a
 Reading preset names uses the USB protocol as documented by [OpenHX](https://github.com/allansomensi/openhx)
 (MIT licence, © 2026 Allan Somensi) – see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The MIDI implementation
 follows the HX Stomp Owner's Manual. Line 6, HX Stomp, HX Edit and Helix are trademarks of Yamaha Guitar Group, Inc.
+
+## Support
+
+HX Stomp Control is free and open source. If you find it useful, you can
+[support me on Ko-fi](https://ko-fi.com/jonsolberg) ❤️ · More projects at [jonsolberg.se](https://jonsolberg.se:8080/)
 
 ## License
 

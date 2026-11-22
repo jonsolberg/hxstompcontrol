@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '0.2.0';
+  var VERSION = '0.2.1';
   var PF = window.HXPlatform, HLX = window.HLX, CC = window.HXMidiMap.CC;
 
   // ------------------------------------------------------------------ settings (kept in the browser)
@@ -834,8 +834,11 @@
         h('p', { class: 'muted small', style: 'margin:8px 0 0' }, 'Footswitches are momentary: the app sends 127 when you press and 0 when you let go, like a real switch.')),
       h('div', { class: 'card' }, h('h2', null, 'Live editing'),
         h('p', null, 'Changing blocks and settings directly on the pedal, like HX Edit does, needs the pedal\'s private USB protocol. It isn\'t documented by Line 6, so it\'s being worked out step by step and will come in a later version. Reading preset names in the Android app already uses it (based on the OpenHX project\'s documentation).')),
-      h('div', { class: 'card' }, h('h2', null, 'Source and licence'),
-        h('p', null, 'Free software under the GNU GPL v3 or later. ', h('a', { href: 'https://github.com/jonsolberg/hxstompforandroid', target: '_blank', rel: 'noopener' }, 'Source on GitHub'), '.'),
+      h('div', { class: 'card' }, h('h2', null, 'About'),
+        h('p', null, 'HX Stomp Control ' + VERSION + ' · © 2026 Jon Solberg. Free software under the GNU GPL v3 or later. Not affiliated with Line 6.'),
+        h('p', null, h('a', { href: 'https://github.com/jonsolberg/hxstompforandroid', target: '_blank', rel: 'noopener' }, 'Source and help on GitHub'), ' · ',
+          h('a', { href: 'https://jonsolberg.se:8080/', target: '_blank', rel: 'noopener' }, 'jonsolberg.se'), ' · ',
+          h('a', { href: 'https://ko-fi.com/jonsolberg', target: '_blank', rel: 'noopener' }, '❤️ Support me on Ko-fi')),
         h('p', { class: 'muted small' }, 'Line 6, HX Stomp, HX Edit and Helix are trademarks of Yamaha Guitar Group, Inc. HX Stomp Control ' + VERSION + '.')));
   }
 
