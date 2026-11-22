@@ -35,17 +35,15 @@ sleep 8
 adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS
 shot 01-not-connected
 
-# 2. Demo mode: a simulated HX Stomp
-adb shell am force-stop $PKG
-adb shell am start -n $PKG/.MainActivity --ez demo true
-sleep 8
-shot 02-direct
-tap_text "Presets"
-shot 03-presets
-tap_text "Editor"
-shot 04-editor
-tap_text "System"
-shot 05-system
+# 2. Demo mode: a simulated HX Stomp, one start per page
+n=2
+for page in direct presets editor system help; do
+  adb shell am force-stop $PKG
+  adb shell am start -n $PKG/.MainActivity --ez demo true --es page $page
+  sleep 7
+  shot "0$n-$page"
+  n=$((n + 1))
+done
 
 adb logcat -d > shots/logcat.txt
 adb logcat -d | grep -E "AndroidRuntime|FATAL" > shots/crashes.txt || true

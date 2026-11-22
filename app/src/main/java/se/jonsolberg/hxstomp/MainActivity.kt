@@ -165,7 +165,11 @@ class MainActivity : ComponentActivity() {
 
         val demo = intent?.getBooleanExtra(EXTRA_DEMO, false) == true
         if (savedInstanceState != null) web.restoreState(savedInstanceState)
-        else web.loadUrl("file:///android_asset/index.html" + if (demo) "?demo" else "")
+        else {
+            // Optional start page (direct, presets, editor, midi, system, help), e.g. for screenshots.
+            val page = intent?.getStringExtra(EXTRA_PAGE)?.takeIf { it.matches(Regex("[a-z]+")) }
+            web.loadUrl("file:///android_asset/index.html" + (if (demo) "?demo" else "") + (if (page != null) "#$page" else ""))
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -334,6 +338,7 @@ class MainActivity : ComponentActivity() {
     companion object {
         const val ACTION_USB_PERMISSION = "se.jonsolberg.hxstomp.USB_PERMISSION"
         const val EXTRA_DEMO = "demo"
+        const val EXTRA_PAGE = "page"
     }
 }
 
