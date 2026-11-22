@@ -116,9 +116,19 @@ follows the HX Stomp Owner's Manual. Line 6, HX Stomp, HX Edit and Helix are tra
 
 ## Support
 
-HX Stomp Control is free and open source. If you find it useful, you can
-[support me on Ko-fi](https://ko-fi.com/jonsolberg) ❤️ · More projects at [jonsolberg.se](https://jonsolberg.se:8080/)
+HX Stomp Control is free, open source and has no ads. If you find it useful, you can
+[support me on Ko-fi](https://ko-fi.com/jonsolberg) ❤️
+
+[![Support me on Ko-fi](https://img.shields.io/badge/Ko--fi-support%20me-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/jonsolberg)
 
 ## License
 
-GPL-3.0-or-later – see [LICENSE](LICENSE).
+Copyright © 2026 Jon Solberg
+
+This program is free software: you can redistribute it and/or modify it under the terms of the
+GNU General Public License as published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+[GNU General Public License](LICENSE) for more details.
