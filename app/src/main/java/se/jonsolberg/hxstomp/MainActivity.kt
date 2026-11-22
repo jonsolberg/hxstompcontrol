@@ -27,6 +27,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Base64
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.webkit.JavascriptInterface
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -109,8 +110,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         web = WebView(this)
         web.setBackgroundColor(getColor(R.color.bg))
-        setContentView(web, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
-        ViewCompat.setOnApplyWindowInsetsListener(web) { v, insets ->
+        // The WebView ignores its own padding, so the system bars are kept clear by a container around it.
+        val root = FrameLayout(this)
+        root.setBackgroundColor(getColor(R.color.bg))
+        root.addView(web, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+        setContentView(root)
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
             WindowInsetsCompat.CONSUMED
@@ -333,4 +338,4 @@ class MainActivity : ComponentActivity() {
 }
 
 /** The app version, shown in the web UI (kept here so no BuildConfig generation is needed). */
-object BuildConfigVersion { const val NAME = "0.2.0" }
+object BuildConfigVersion { const val NAME = "0.2.2" }
