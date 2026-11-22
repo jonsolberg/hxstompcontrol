@@ -231,10 +231,10 @@ table.grid th { font-size: 12px; color: var(--muted); font-weight: 600; }
 .hwkey:active:not(:disabled) { transform: translateY(1px); background: linear-gradient(#2a2c30, #18191c); }
 .hwkey:disabled { opacity: .55; }
 .hwkey.action:disabled { opacity: 1; cursor: default; }  /* ACTION has no MIDI, but looks like the real button */
-.hwkey.view, .hwkey.pl { padding-right: 34px; } .hwkey.action, .hwkey.pr { padding-left: 34px; }  /* clear of the knob */
+.hwkey.view, .hwkey.pl { padding-right: 16px; } .hwkey.action, .hwkey.pr { padding-left: 16px; }  /* centred in the part the knob doesn't cover */
 .hxpanel.off .hwkey:disabled { opacity: .55; }
-.hwkey.view::before, .hwkey.action::before { content: '⌂'; display: block; font-size: 17px; line-height: 1; margin-bottom: 3px; }
-.hwkey.action::before { visibility: hidden; }  /* same text line as VIEW */
+.hwkey { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+.hwkey.view::before { content: '⌂'; font-size: 15px; line-height: 1; }
 .hxpanel .knob { cursor: ns-resize; touch-action: none; }
 .hxpanel .knobwrap .knob { position: relative; }
 .hxpanel .knob .k { width: 66px; height: 66px; border-radius: 50%; position: relative;
