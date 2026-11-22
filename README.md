@@ -7,10 +7,10 @@ guide. Use it in the browser or as a standalone Android app.
 > ⚠️ **Experimental and under development.** Independent hobby project, not affiliated with Line 6 or
 > Yamaha Guitar Group.
 
-**[Open the web version](https://jonsolberg.github.io/hxstompforandroid/)** ·
-**[Try the demo (no pedal needed)](https://jonsolberg.github.io/hxstompforandroid/?demo)** ·
-**[Download the Android APK](https://github.com/jonsolberg/hxstompforandroid/releases/latest/download/HXStompControl.apk)** ·
-[all releases](https://github.com/jonsolberg/hxstompforandroid/releases)
+**[Open the web version](https://jonsolberg.github.io/hxstompcontrol/)** ·
+**[Try the demo (no pedal needed)](https://jonsolberg.github.io/hxstompcontrol/?demo)** ·
+**[Download the Android APK](https://github.com/jonsolberg/hxstompcontrol/releases/latest/download/HXStompControl.apk)** ·
+[all releases](https://github.com/jonsolberg/hxstompcontrol/releases)
 
 To install the APK, allow your browser or file manager to *install unknown apps* when Android asks.
 
