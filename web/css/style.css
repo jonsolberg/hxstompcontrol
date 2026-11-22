@@ -224,14 +224,17 @@ table.grid th { font-size: 12px; color: var(--muted); font-weight: 600; }
 .bezel .lcd .fsl b { width: 26px; height: 10px; border: 3px solid; border-radius: 50%; }
 .bezel .lcd.tuner .pn::after { content: ''; }
 .bezel .lcd .tunebar { margin: 18px auto 0; width: 80%; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #e5484d, #f5a524 35%, #3ccf6b 50%, #f5a524 65%, #e5484d); }
-.hxpanel .pill { width: 276px; height: 66px; border-radius: 12px; display: flex; justify-content: space-between; padding: 7px;
+.hxpanel .pill { width: 236px; height: 66px; border-radius: 12px; display: flex; justify-content: space-between; padding: 7px;
   background: #0b0c0d; box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 2px 0 #000; }
-.hwkey { width: 106px; height: 52px; border-radius: 8px; padding: 0; border: 1px solid #3c3e43; color: #e8e8ea;
-  background: linear-gradient(#34363b, #1f2024); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); font: 700 12.5px/1 "Helvetica Neue", Arial, sans-serif; letter-spacing: .4px; }
+.hwkey { width: 86px; height: 52px; border-radius: 8px; padding: 0; border: 1px solid #3c3e43; color: #e8e8ea;
+  background: linear-gradient(#34363b, #1f2024); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); font: 700 11.5px/1 "Helvetica Neue", Arial, sans-serif; letter-spacing: .3px; }
 .hwkey:active:not(:disabled) { transform: translateY(1px); background: linear-gradient(#2a2c30, #18191c); }
 .hwkey:disabled { opacity: .55; }
 .hwkey.action:disabled { opacity: 1; cursor: default; }  /* ACTION has no MIDI, but looks like the real button */
-.hwkey.view, .hwkey.pl { padding-right: 16px; } .hwkey.action, .hwkey.pr { padding-left: 16px; }  /* centred in the part the knob doesn't cover */
+.hwkey.view, .hwkey.pl { padding-right: 18px; } .hwkey.action, .hwkey.pr { padding-left: 18px; }
+/* The inner ends of the buttons curve around the knob with a small gap (pill 236 wide, buttons 86, knob 74 + ring). */
+.hwkey.view, .hwkey.pl { -webkit-mask: radial-gradient(circle at 111px 26px, transparent 44px, #000 44.5px); mask: radial-gradient(circle at 111px 26px, transparent 44px, #000 44.5px); }
+.hwkey.action, .hwkey.pr { -webkit-mask: radial-gradient(circle at -25px 26px, transparent 44px, #000 44.5px); mask: radial-gradient(circle at -25px 26px, transparent 44px, #000 44.5px); }  /* centred in the part the knob doesn't cover */
 .hxpanel.off .hwkey:disabled { opacity: .55; }
 .hwkey { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
 .hwkey.view::before { content: '⌂'; font-size: 15px; line-height: 1; }
@@ -251,7 +254,7 @@ table.grid th { font-size: 12px; color: var(--muted); font-weight: 600; }
 .hxpanel .knobwrap .kl { font: 600 12px/1 system-ui; color: #aab0b8; }
 .hxpanel .knobwrap .v { font: 600 12px/1 ui-monospace, monospace; color: #e9e9ea; }
 .hxpanel .plabel { font: 700 14px/1 "Helvetica Neue", Arial, sans-serif; letter-spacing: .5px; color: #e8e8ea; white-space: nowrap; }
-.hxpanel .bracket { display: flex; align-items: flex-end; gap: 10px; width: 256px; justify-content: center; }
+.hxpanel .bracket { display: flex; align-items: flex-end; gap: 10px; width: 216px; justify-content: center; }
 .hxpanel .bracket::before, .hxpanel .bracket::after { content: ''; flex: 1; height: 12px; margin-bottom: 6px; border-bottom: 2px solid #8a8d92; }
 .hxpanel .bracket::before { border-left: 2px solid #8a8d92; border-bottom-left-radius: 9px; }
 .hxpanel .bracket::after { border-right: 2px solid #8a8d92; border-bottom-right-radius: 9px; }
