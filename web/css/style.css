@@ -175,7 +175,7 @@ table.grid th { font-size: 12px; color: var(--muted); font-weight: 600; }
 .toast.out { opacity: 0; }
 
 /* ---------------------------------------------------------------- Direct: the pedal panel (920 × 660, scaled to fit) */
-.hxwrap { position: relative; width: 100%; max-width: 920px; margin: 0 auto 14px; }
+.hxwrap { position: relative; width: 100%; max-width: 1008px; margin: 0 auto 14px; }
 .hxpanel { position: absolute; left: 0; top: 0; width: 920px; height: 660px; transform-origin: top left; user-select: none; -webkit-user-select: none;
   border-radius: 26px; color: #e8e8ea; font-family: "Helvetica Neue", Arial, system-ui, sans-serif;
   background:
@@ -191,6 +191,12 @@ table.grid th { font-size: 12px; color: var(--muted); font-weight: 600; }
   background: linear-gradient(90deg, #8d9095, #e6e8eb 45%, #9a9da2); box-shadow: inset 0 -3px 0 rgba(0,0,0,.25); }
 .hxpanel .jack.mini { width: 30px; height: 16px; }
 .hxpanel .jack.usb { width: 34px; height: 12px; border-radius: 2px 2px 0 0; background: linear-gradient(90deg, #111214, #3a3c40 45%, #141517); box-shadow: 0 0 0 1px #55585e; }
+.hxpanel .jack.side { width: 22px; height: 46px; border-radius: 5px 0 0 5px; background: linear-gradient(180deg, #8d9095, #e6e8eb 45%, #9a9da2); box-shadow: inset 3px 0 0 rgba(0,0,0,.25); }
+.hxpanel .jack.din.side { height: 50px; width: 18px; border-radius: 9px 0 0 9px; background: linear-gradient(180deg, #111214, #3a3c40 45%, #141517); box-shadow: 0 0 0 1px #55585e; }
+.hxpanel .jack.dc.side { height: 26px; width: 16px; border-radius: 4px 0 0 4px; background: linear-gradient(180deg, #111214, #3a3c40 45%, #141517); box-shadow: 0 0 0 1px #55585e; }
+.hxpanel .jack.mini.side { height: 30px; width: 18px; border-radius: 0 5px 5px 0; }
+.hxpanel .jack.usb.side { height: 34px; width: 12px; border-radius: 0 2px 2px 0; }
+.hxpanel .jlabel.vert { transform: translate(-50%, -50%) rotate(-90deg); }
 .hxpanel .jlabel { font: 600 12px/1 system-ui, sans-serif; letter-spacing: .3px; color: var(--muted); white-space: nowrap; }
 .hxpanel .screw { width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #8a8d92, #2c2d31 70%); box-shadow: inset 0 0 0 1px #000; }
 .hxpanel .screw::after { content: ''; position: absolute; left: 3px; right: 3px; top: 6px; height: 2px; background: #111; transform: rotate(35deg); }
