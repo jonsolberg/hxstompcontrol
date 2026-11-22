@@ -14,6 +14,7 @@
     model: 'stomp', ch: 1, numbering: 'bank', theme: 'auto', port: '',
     fs: [{ label: 'FS1', color: '#9a7bff' }, { label: 'FS2', color: '#3ccf6b' }, { label: 'FS3', color: '#ff4a3d' },
       { label: 'FS4', color: '#3b82f6' }, { label: 'FS5', color: '#f5a524' }],
+    fsMode: 'latch',
     names: null
   };
   function loadSettings() {
@@ -30,7 +31,7 @@
   var S = {
     page: 'direct',
     midi: new PF.Midi(),
-    preset: null, snapshot: null, tuner: false, bypassed: false, knobs: [64, 64, 64], exp: [0, 0],
+    preset: null, snapshot: null, tuner: false, bypassed: false, fsOn: [false, false, false, false, false], knobs: [64, 64, 64], exp: [0, 0],
     looper: { rec: false, play: false, rev: false, half: false },
     tempo: 120, taps: [], clockOut: false, clockIn: null, clockTicks: [],
     seen: { any: false, pc: false, cc69: false, clock: false },
@@ -94,6 +95,55 @@
   }
   function nameOf(slot) { return slot == null ? '' : (names()[slot] || ''); }
 
+  // ------------------------------------------------------------------ what the setlist file tells about each preset
+  // Kept in the browser (small): snapshot names, the footswitch labels and blocks, the chain colours.
+  var INFO_KEY = PF.isDemo ? 'hx-setinfo-demo' : 'hx-setinfo';
+  var SETINFO = (function () { try { return JSON.parse(localStorage.getItem(INFO_KEY) || 'null') || {}; } catch (e) { return {}; } })();
+  function presetSummary(p) {
+    if (!p || HLX.isEmptyPreset(p)) return null;
+    var blocks = [], fsmap = {};
+    ['dsp0', 'dsp1'].forEach(function (dsp) {
+      HLX.blocks(p, dsp).forEach(function (x) {
+        if (x.kind !== 'block') return;
+        blocks.push({ k: dsp + '/' + x.key, c: x.info.color, n: x.info.name, on: x.b['@enabled'] !== false });
+        // footswitch assignments: in tone.footswitch[dsp][block] or on the block itself
+        var f = (p.tone.footswitch && p.tone.footswitch[dsp] && p.tone.footswitch[dsp][x.key]) || (x.b['@fs_index'] != null ? x.b : null);
+        if (f && f['@fs_index'] != null && f['@fs_enabled'] !== false) {
+          var idx = f['@fs_index'];
+          (fsmap[idx] = fsmap[idx] || []).push({ k: dsp + '/' + x.key, label: f['@fs_customlabel'] || f['@fs_label'] || x.info.name.replace(/^(Amp|Preamp|Cab|Dist|Delay|Reverb|Mod|Compressor|EQ|Pitch|Filter|Wah|Vol|Looper) /, '') });
+        }
+      });
+    });
+    var fs = Object.keys(fsmap).map(Number).sort(function (a, b) { return a - b; }).slice(0, 5).map(function (i) {
+      var l = fsmap[i]; return { label: l[0].label.slice(0, 16), keys: l.map(function (x) { return x.k; }) };
+    });
+    var snaps = HLX.snapshots(p).map(function (sn) {
+      var st = {};
+      Object.keys(sn.s.blocks || {}).forEach(function (dsp) { Object.keys(sn.s.blocks[dsp] || {}).forEach(function (b) { st[dsp + '/' + b] = !!sn.s.blocks[dsp][b]; }); });
+      return { name: sn.s['@name'] || ('SNAPSHOT ' + (sn.index + 1)), valid: sn.s['@valid'] !== false, on: st };
+    });
+    return { blocks: blocks, fs: fs, snaps: snaps };
+  }
+  function storeSetlistInfo(list) {
+    SETINFO = {};
+    list.forEach(function (p, i) { var s = presetSummary(p); if (s && i < count()) SETINFO[i] = s; });
+    try { localStorage.setItem(INFO_KEY, JSON.stringify(SETINFO)); } catch (e) { }
+  }
+  function infoOf(slot) { return slot == null ? null : SETINFO[slot] || null; }
+  /** Footswitch lights for the current preset and snapshot, from the setlist file. */
+  function syncFootswitches() {
+    var inf = infoOf(S.preset);
+    S.fsOn = [false, false, false, false, false];
+    if (!inf) return;
+    var snap = S.snapshot != null && inf.snaps[S.snapshot] ? inf.snaps[S.snapshot].on : {};
+    inf.fs.forEach(function (f, i) {
+      S.fsOn[i] = f.keys.some(function (k) {
+        if (k in snap) return snap[k];
+        var b = inf.blocks.filter(function (x) { return x.k === k; })[0]; return b ? b.on : false;
+      });
+    });
+  }
+
   // ------------------------------------------------------------------ MIDI out
   function ch() { return (Math.max(1, Math.min(16, CFG.ch | 0)) - 1); }
   function send(bytes) {
@@ -105,18 +155,18 @@
 
   function selectPreset(slot) {
     if (slot < 0 || slot >= count()) return;
-    if (pc(slot)) { S.preset = slot; S.snapshot = null; refreshDirect(); refreshPresetMarks(); }
+    if (pc(slot)) { S.preset = slot; S.snapshot = null; syncFootswitches(); refreshDirect(); refreshPresetMarks(); }
   }
   function stepPreset(dir) {
     if (!cc(CC.PRESET_STEP, dir > 0 ? 127 : 0)) return;
     if (S.preset != null) S.preset = (S.preset + dir + count()) % count();
-    S.snapshot = null; refreshDirect(); refreshPresetMarks();
+    S.snapshot = null; syncFootswitches(); refreshDirect(); refreshPresetMarks();
   }
   function selectSnapshot(i) {
     if (!cc(CC.SNAPSHOT, i)) return;
     if (i <= 3) S.snapshot = i;
     else if (S.snapshot != null) S.snapshot = (S.snapshot + (i === 8 ? 1 : -1) + snapCount()) % snapCount();
-    refreshDirect();
+    syncFootswitches(); refreshDirect();
   }
   function snapCount() { return CFG.model === 'xl' ? 4 : 3; }
 
@@ -154,9 +204,9 @@
     if (mc !== ch() && st !== 0xF0) return;
     if (st === 0xC0) {
       S.seen.pc = true;
-      if (m[1] < count()) { S.preset = m[1]; S.snapshot = null; refreshDirect(); refreshPresetMarks(); }
+      if (m[1] < count()) { S.preset = m[1]; S.snapshot = null; syncFootswitches(); refreshDirect(); refreshPresetMarks(); }
     } else if (st === 0xB0 && m[1] === CC.SNAPSHOT && m[2] <= 3) {
-      S.seen.cc69 = true; S.snapshot = m[2]; refreshDirect();
+      S.seen.cc69 = true; S.snapshot = m[2]; syncFootswitches(); refreshDirect();
     }
   });
   function clockTick() {
@@ -273,8 +323,8 @@
 
     // the rest of the pedal's functions, as plain buttons
     var ext = [3, 4].map(function (i) {
-      var b = h('button', { disabled: !conn, title: 'External footswitch ' + (i + 1) + ' (CC ' + (CC.FS1 + i) + ')' }, fs[i].label);
-      momentary(b, CC.FS1 + i); return b;
+      var b = h('button', { id: 'fs' + i, disabled: !conn, title: 'External footswitch ' + (i + 1) + ' (CC ' + (CC.FS1 + i) + ')' }, fs[i].label);
+      momentary(b, CC.FS1 + i, i); return b;
     });
     add(page, h('div', { class: 'card ctlbar' }, h('div', { class: 'row' },
       h('button', { id: 'tapBtn', disabled: !conn, onclick: tap, title: 'Tap tempo (CC 64)' }, 'Tap'),
@@ -376,20 +426,38 @@
     var b = h('button', { class: on ? 'on' : '', disabled: !S.midi.connected, onclick: function () { var v = !b.classList.contains('on'); b.classList.toggle('on', v); fn(v); } }, text);
     return b;
   }
-  function momentary(el, n, ring) {
+  /**
+   * A footswitch. The pedal gets a real press (127) and release (0), like its own switch.
+   * Latching (default): each tap turns the switch's light on or off. Momentary: lit while held.
+   * As on the pedal, any switch first leaves the tuner or All bypass.
+   */
+  function momentary(el, n, i) {
     var down = false;
-    function press(e) { if (!S.midi.connected) return; e.preventDefault(); if (down) return; down = true; (ring || el).classList.add('down', 'lit'); cc(n, 127); }
-    function release() { if (!down) return; down = false; (ring || el).classList.remove('down', 'lit'); cc(n, 0); }
+    function lit() {
+      var on = CFG.fsMode === 'momentary' ? down : !!S.fsOn[i];
+      el.classList.toggle(el.tagName === 'BUTTON' ? 'on' : 'lit', on);
+    }
+    function press(e) {
+      if (!S.midi.connected) return; if (e) e.preventDefault(); if (down) return;
+      down = true; el.classList.add('down'); cc(n, 127); lit();
+    }
+    function release() {
+      if (!down) return; down = false; el.classList.remove('down'); cc(n, 0);
+      if (S.tuner || S.bypassed) { S.tuner = false; S.bypassed = false; refreshDirect(); return; }
+      if (CFG.fsMode !== 'momentary' && i != null) { S.fsOn[i] = !S.fsOn[i]; refreshDirect(); }
+      lit();
+    }
     el.addEventListener('pointerdown', press);
     el.addEventListener('pointerup', release);
     el.addEventListener('pointerleave', release);
     el.addEventListener('pointercancel', release);
-    el._press = press; el._release = release;
+    el._press = press; el._release = release; el._lit = lit;
+    lit();
   }
   function footswitch(i, f) {
     var ring = h('div', { class: 'ring', id: 'fs' + i, style: '--c:' + f.color, title: f.label + ' — footswitch ' + (i + 1) + ' (CC ' + (CC.FS1 + i) + ')' },
       h('div', { class: 'nut' }), h('div', { class: 'cap' }));
-    momentary(ring, CC.FS1 + i);
+    momentary(ring, CC.FS1 + i, i);
     return h('div', { class: 'fs' }, ring);
   }
   function knob(name, i) {
@@ -415,25 +483,47 @@
     show();
     return el;
   }
+  function fork() {
+    return h('span', { class: 'fork', html: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 3l9 9M9 3l7 7M12.5 10.5l6.5 9"/><circle cx="19.5" cy="20" r="1.3" fill="currentColor"/></svg>' });
+  }
   function refreshDirect() {
     renderStatus();
     var lcd = $('lcd'); if (!lcd) return;
-    lcd.className = 'lcd' + (S.tuner ? ' tuner' : '');
+    lcd.className = 'lcd' + (S.tuner ? ' tuner' : S.bypassed ? ' bypass' : '');
     lcd.innerHTML = '';
-    var fs = CFG.fs;
+    var fs = CFG.fs, inf = infoOf(S.preset);
     if (S.tuner) {
-      add(lcd, [h('div', { class: 'pn' }, 'TUNER'), h('div', { class: 'pname muted' }, 'Tuning on the pedal'), h('div', { class: 'tunebar' })]);
-    } else {
+      // The pedal's tuner screen while it waits for a note. The app can't show the note itself:
+      // the pitch is only shown on the pedal, it isn't sent over MIDI.
       add(lcd, [
-        h('div', { class: 'snapicon', title: 'Snapshot' }, S.snapshot != null ? String(S.snapshot + 1) : '–'),
+        h('div', { class: 'tn-note' }, h('span', null, '›'), h('b', null, ''), h('span', null, '‹')),
+        h('div', { class: 'tn-strobe' }),
+        h('div', { class: 'tn-sep' }),
+        h('div', { class: 'tn-title' }, fork(), 'Tuner'),
+        h('div', { class: 'tn-params' }, [['Mute', 'Output', 0], ['440 Hz', 'Refrnc', .5], ['Strobe', 'Type', 1]].map(function (p) {
+          return h('div', null, h('span', { class: 'v' }, p[0]), h('i', { style: '--p:' + p[2] }), h('span', { class: 'n' }, p[1]));
+        }))
+      ]);
+    } else if (S.bypassed) {
+      add(lcd, h('div', { class: 'bp' },
+        h('span', { class: 'bp-icon', html: '<svg viewBox="0 0 48 42" width="64" height="56"><path d="M24 3L45 39H3Z" fill="none" stroke="#f5e93a" stroke-width="4" stroke-linejoin="round"/><path d="M24 15v12" stroke="#f5e93a" stroke-width="4.5" stroke-linecap="round"/><circle cx="24" cy="33" r="2.6" fill="#f5e93a"/></svg>' }),
+        h('div', null, h('b', null, 'DSP Bypass!'), h('b', null, 'Press any switch'))));
+    } else {
+      var snapName = inf && S.snapshot != null && inf.snaps[S.snapshot] ? inf.snaps[S.snapshot].name : null;
+      var chain = inf ? inf.blocks.slice(0, 9) : null;
+      add(lcd, [
+        h('div', { class: 'snapicon', title: snapName || 'Snapshot' }, S.snapshot != null ? String(S.snapshot + 1) : '–'),
         h('div', { class: 'pn' }, label(S.preset)),
         h('div', { class: 'pname' }, S.preset == null ? (S.midi.connected ? 'Pick a preset' : '') : (nameOf(S.preset) || 'Preset ' + label(S.preset))),
-        h('div', { class: 'chainline' }, h('i'), h('i'), h('i'), h('i'), h('i')),
+        snapName ? h('div', { class: 'snapname' }, snapName) : null,
+        h('div', { class: 'chainline' }, chain ? chain.map(function (b) { return h('i', { title: b.n, style: 'background:' + b.c }); }) : [h('i'), h('i'), h('i'), h('i'), h('i')]),
         h('div', { class: 'fsl' }, [0, 1, 2].map(function (i) {
-          return h('div', { style: 'color:' + fs[i].color }, h('span', null, fs[i].label), h('b', { style: 'border-color:' + fs[i].color }));
+          var lab = inf && inf.fs[i] ? inf.fs[i].label : (inf ? '' : fs[i].label);
+          return h('div', { style: 'color:' + fs[i].color }, h('span', null, lab || ' '), h('b', { class: S.fsOn[i] ? 'on' : '', style: 'border-color:' + fs[i].color }));
         }))
       ]);
     }
+    [0, 1, 2, 3, 4].forEach(function (i) { var r = $('fs' + i); if (r && r._lit) r._lit(); });
     var info = $('panelinfo');
     if (info) info.textContent = S.bypassed ? 'ALL BYPASS' : S.midi.connected ? 'MIDI ch ' + CFG.ch + (S.snapshot != null ? ' · snapshot ' + (S.snapshot + 1) : '') : 'not connected';
     var t = $('tunerBtn'); if (t) t.classList.toggle('on', S.tuner);
@@ -489,7 +579,7 @@
         PF.Pedal.available() ? h('button', { class: 'primary', onclick: readNames }, 'Read names from pedal') : null,
         h('button', { onclick: function () { openFile('names'); } }, 'Names from setlist (.hls)…'),
         h('button', { onclick: exportNames }, 'Export list'),
-        h('button', { onclick: function () { if (confirm('Forget all preset names?')) { CFG.names = null; saveSettings(); drawBanks(); } } }, 'Clear names')));
+        h('button', { onclick: function () { if (confirm('Forget all preset names and what the setlist said about them?')) { CFG.names = null; saveSettings(); SETINFO = {}; try { localStorage.removeItem(INFO_KEY); } catch (e) { } drawBanks(); } } }, 'Clear names')));
     add(page, src);
     var banks = h('div', { class: 'banks', id: 'banks' });
     add(page, banks);
@@ -554,8 +644,8 @@
         if (mode === 'names' || mode === 'editor') {
           var n = names();
           r.presets.forEach(function (p, i) { if (i < n.length) n[i] = HLX.isEmptyPreset(p) ? '' : HLX.presetName(p); });
-          saveSettings();
-          toast('Setlist "' + file.name + '": ' + r.presets.length + ' presets — names updated');
+          saveSettings(); storeSetlistInfo(r.presets); syncFootswitches(); refreshDirect();
+          toast('Setlist "' + file.name + '": ' + r.presets.length + ' presets — names, snapshots and footswitches updated');
         }
         if (S.page === 'presets') drawBanks(); else if (mode === 'editor') render();
         return;
@@ -857,6 +947,7 @@
     var form = h('div', { class: 'form' },
       'Pedal', sel('model', [['stomp', 'HX Stomp (126 presets, 3 snapshots)'], ['xl', 'HX Stomp XL (128 presets, 4 snapshots)']], function () { CFG.names = null; names(); }),
       'MIDI channel', sel('ch', chs),
+      'Footswitches', sel('fsMode', [['latch', 'Latching: tap on, tap off (like most effects)'], ['momentary', 'Momentary: on while held']], render),
       'Preset numbers', sel('numbering', [['bank', 'Banks (00A, 00B, 00C …)'], ['num', 'Numbers (000–125)']]),
       'Theme', sel('theme', [['auto', 'Like the system'], ['light', 'Light'], ['dark', 'Dark']], applyTheme),
       PF.isAndroid ? null : 'MIDI device', PF.isAndroid ? null : h('div', { class: 'row' }, sel('port', [['', 'Find the HX Stomp by itself']].concat(ports)),
@@ -904,7 +995,7 @@
       h('div', { class: 'card' }, h('h2', null, 'How Direct mode talks to the pedal'),
         h('p', null, 'Only with the MIDI messages in the HX Stomp Owner\'s Manual: Program Change 0–125 picks a preset, and these control changes do the rest. Every message goes out on the MIDI channel set under System.'),
         h('table', { class: 'grid' }, h('tr', null, h('th', null, 'CC'), h('th', null, 'Values'), h('th', null, 'What it does')), rows),
-        h('p', { class: 'muted small', style: 'margin:8px 0 0' }, 'Footswitches are momentary: the app sends 127 when you press and 0 when you let go, like a real switch.')),
+        h('p', { class: 'muted small', style: 'margin:8px 0 0' }, 'Footswitches send 127 when you press and 0 when you let go, like a real switch. On screen they latch (tap on, tap off) or, under System, act momentary. With a setlist file opened, the screen shows each preset\'s snapshot names, footswitch labels and which switches are on.')),
       h('div', { class: 'card' }, h('h2', null, 'Live editing'),
         h('p', null, 'Changing blocks and settings directly on the pedal, like HX Edit does, needs the pedal\'s private USB protocol. It isn\'t documented by Line 6, so it\'s being worked out step by step and will come in a later version. Reading preset names in the Android app already uses it (based on the OpenHX project\'s documentation).')),
       h('div', { class: 'card' }, h('h2', null, 'About'),
