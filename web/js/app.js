@@ -231,15 +231,20 @@
     var lcd = h('div', { class: 'lcd' + (S.tuner ? ' tuner' : ''), id: 'lcd' });
     var panel = h('div', { class: 'hxpanel' + (conn ? '' : ' off') },
       // jacks along the top edge
-      [[170, 'EXP 1/2'], [300, 'RETURN'], [430, 'SEND'], [600, 'INPUT'], [750, 'OUTPUT']].map(function (j) {
-        return [at(j[0], -13, h('span', { class: 'jack' })), at(j[0], -34, h('span', { class: 'jlabel' }, j[1]))];
+      // the top edge, left to right as seen from the front (the manual shows it from behind)
+      [[60, 'POWER', 'switch'], [125, 'DC IN', 'dc'], [190, 'USB', 'usb'],
+        [330, 'RIGHT', ''], [425, 'L/MONO', ''], [565, 'RIGHT', ''], [660, 'L/MONO', ''], [800, 'FS 4/5', '']].map(function (j) {
+        return [at(j[0], -13, h('span', { class: 'jack ' + j[2] })), at(j[0], -34, h('span', { class: 'jlabel' }, j[1]))];
       }),
-      // jacks on the left and right sides
-      [[120, 'MIDI IN', 'jack din'], [215, 'MIDI OUT', 'jack din'], [320, 'POWER', 'jack dc']].map(function (j) {
-        return [at(-11, j[0], h('span', { class: j[2] + ' side' })), at(-30, j[0], h('span', { class: 'jlabel vert' }, j[1]))];
+      at(377, -54, h('span', { class: 'jlabel grp' }, 'OUTPUT')), at(612, -54, h('span', { class: 'jlabel grp' }, 'INPUT')),
+      at(800, -54, h('span', { class: 'jlabel grp' }, 'EXP 1/2')),
+      // left side, back to front: MIDI IN, MIDI OUT/THRU, PHONES
+      [[105, 'MIDI IN', 'din'], [190, 'MIDI OUT/THRU', 'din'], [330, 'PHONES', '']].map(function (j) {
+        return [at(-11, j[0], h('span', { class: 'jack side ' + j[2] })), at(-30, j[0], h('span', { class: 'jlabel vert' }, j[1]))];
       }),
-      [[120, 'PHONES', 'jack mini'], [215, 'USB', 'jack usb']].map(function (j) {
-        return [at(931, j[0], h('span', { class: j[2] + ' side' })), at(950, j[0], h('span', { class: 'jlabel vert' }, j[1]))];
+      // right side, back to front: RETURN/AUX IN RIGHT and L/MONO, SEND (stereo)
+      [[105, 'RETURN R'], [215, 'RETURN L/MONO'], [330, 'SEND']].map(function (j) {
+        return [at(931, j[0], h('span', { class: 'jack side right' })), at(950, j[0], h('span', { class: 'jlabel vert' }, j[1]))];
       }),
       at(56, 22, h('span', { class: 'screw' })), at(864, 22, h('span', { class: 'screw' })),
       // the screen
@@ -354,7 +359,7 @@
     return k;
   }
   function fitPanel(wrap, panel) {
-    var W = 920, H = 660, TOP = 46, SIDE = 44;   // room for the jacks above and at the sides
+    var W = 920, H = 660, TOP = 66, SIDE = 44;   // room for the jacks above and at the sides
     var s = Math.min(1, (wrap.clientWidth || W) / (W + 2 * SIDE));
     panel.style.transform = 'scale(' + s + ')';
     panel.style.top = Math.round(TOP * s) + 'px';
