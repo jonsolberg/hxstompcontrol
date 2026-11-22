@@ -232,7 +232,7 @@
     var panel = h('div', { class: 'hxpanel' + (conn ? '' : ' off') },
       // jacks along the top edge
       // the top edge, left to right as seen from the front (the manual shows it from behind)
-      [[60, 'POWER', 'switch'], [125, 'DC IN', 'dc'], [190, 'USB', 'usb'],
+      [[190, 'USB', 'usb'],
         [330, 'RIGHT', ''], [425, 'L/MONO', ''], [565, 'RIGHT', ''], [660, 'L/MONO', ''], [800, 'FS 4/5', '']].map(function (j) {
         return [at(j[0], -13, h('span', { class: 'jack ' + j[2] })), at(j[0], -34, h('span', { class: 'jlabel' }, j[1]))];
       }),
@@ -240,7 +240,7 @@
       at(800, -54, h('span', { class: 'jlabel grp' }, 'EXP 1/2')),
       // left side, back to front: MIDI IN, MIDI OUT/THRU, PHONES
       [[105, 'MIDI IN', 'din'], [190, 'MIDI OUT/THRU', 'din'], [330, 'PHONES', '']].map(function (j) {
-        return [at(-11, j[0], h('span', { class: 'jack side ' + j[2] })), at(-30, j[0], h('span', { class: 'jlabel vert' }, j[1]))];
+        return [at(j[2] === 'din' ? -3 : -11, j[0], h('span', { class: 'jack side ' + j[2] })), at(-30, j[0], h('span', { class: 'jlabel vert' }, j[1]))];
       }),
       // right side, back to front: RETURN/AUX IN RIGHT and L/MONO, SEND (stereo)
       [[105, 'RETURN R'], [215, 'RETURN L/MONO'], [330, 'SEND']].map(function (j) {
