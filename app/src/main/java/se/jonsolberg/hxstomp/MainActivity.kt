@@ -115,6 +115,7 @@ class MainActivity : ComponentActivity() {
         root.setBackgroundColor(getColor(R.color.bg))
         root.addView(web, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
         setContentView(root)
+        if (savedInstanceState == null) UpdateChecker.start(this)
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
@@ -343,4 +344,4 @@ class MainActivity : ComponentActivity() {
 }
 
 /** The app version, shown in the web UI (kept here so no BuildConfig generation is needed). */
-object BuildConfigVersion { const val NAME = "0.2.4" }
+object BuildConfigVersion { const val NAME = "0.2.5" }
