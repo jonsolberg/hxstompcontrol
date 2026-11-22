@@ -234,7 +234,7 @@
       // the top edge, left to right as seen from the front (the manual shows it from behind)
       [[190, 'USB', 'usb'],
         [330, 'RIGHT', ''], [425, 'L/MONO', ''], [565, 'RIGHT', ''], [660, 'L/MONO', ''], [800, 'FS 4/5', '']].map(function (j) {
-        return [at(j[0], -13, h('span', { class: 'jack ' + j[2] })), at(j[0], -34, h('span', { class: 'jlabel' }, j[1]))];
+        return [at(j[0], j[2] === 'usb' ? -3 : -13, h('span', { class: 'jack ' + j[2] })), at(j[0], -34, h('span', { class: 'jlabel' }, j[1]))];
       }),
       at(377, -54, h('span', { class: 'jlabel grp' }, 'OUTPUT')), at(612, -54, h('span', { class: 'jlabel grp' }, 'INPUT')),
       at(800, -54, h('span', { class: 'jlabel grp' }, 'EXP 1/2')),
